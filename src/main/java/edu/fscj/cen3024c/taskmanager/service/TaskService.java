@@ -3,8 +3,10 @@ package edu.fscj.cen3024c.taskmanager.service;
 import edu.fscj.cen3024c.taskmanager.dto.TaskDTO;
 import edu.fscj.cen3024c.taskmanager.entity.Priority;
 import edu.fscj.cen3024c.taskmanager.entity.Task;
+import edu.fscj.cen3024c.taskmanager.entity.User;
 import edu.fscj.cen3024c.taskmanager.enums.PriorityLevel;
 import edu.fscj.cen3024c.taskmanager.repository.TaskRepository;
+import edu.fscj.cen3024c.taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,28 @@ public class TaskService {
 
     @Autowired
     private TaskRepository taskRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public boolean assignTaskToUser(Integer taskId, Integer userId) {
+        Optional<Task> taskOpt = taskRepository.findById(taskId);
+        Optional<User> userOpt = userRepository.findById(userId);
+
+        if (taskOpt.isPresent() && userOpt.isPresent()) {
+            Task task = taskOpt.get();
+            User user = userOpt.get();
+
+            task.getUsers().add(user);
+            user.getTasks().add(task);
+
+            taskRepository.save(task);
+            userRepository.save(user);
+
+            return true;
+        }
+        return false;
+    }
 
     // Convert TaskDTO to Task entity
     private Task convertToEntity(TaskDTO taskDTO) {
@@ -88,3 +112,4 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 }
+

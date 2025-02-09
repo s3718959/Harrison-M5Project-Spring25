@@ -3,6 +3,7 @@ package edu.fscj.cen3024c.taskmanager.controller;
 import edu.fscj.cen3024c.taskmanager.dto.TaskDTO;
 import edu.fscj.cen3024c.taskmanager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +29,11 @@ public class TaskController {
                 .orElseGet(() -> ResponseEntity.notFound().build());  // Return 404 if not found
     }
 
+    // Create a new task
     @PostMapping
     public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
         TaskDTO savedTask = taskService.save(taskDTO);
-        return ResponseEntity.status(201).body(savedTask);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedTask);
     }
 
     @PutMapping("/{id}")
@@ -46,4 +48,15 @@ public class TaskController {
         taskService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{taskId}/users/{userId}")
+    public ResponseEntity<?> associateTaskWithUser(@PathVariable Integer taskId, @PathVariable Integer userId) {
+        boolean success = taskService.assignTaskToUser(taskId, userId);
+        if (success) {
+            return ResponseEntity.ok("Task " + taskId + " is now associated with User " + userId);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task or User not found");
+        }
+    }
 }
+
